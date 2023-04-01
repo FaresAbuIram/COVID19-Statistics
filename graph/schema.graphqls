@@ -1,0 +1,25 @@
+
+type User {
+  id: ID!
+  email: String!
+  password: String!
+}
+
+type Query {
+  user: User
+}
+
+input RegisterInput {
+  email: String!
+  password: String!
+}
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+type Mutation {
+  register(input: RegisterInput!): Boolean!
+  login(input: LoginInput!): String!
+}
+
