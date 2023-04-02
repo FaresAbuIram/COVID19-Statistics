@@ -1,4 +1,14 @@
 definitions:
+  entity.RegisterResponseFailure:
+    properties:
+      error:
+        type: string
+    type: object
+  entity.RegisterResponseSuccess:
+    properties:
+      message:
+        type: string
+    type: object
   model.RegisterInput:
     properties:
       email:
@@ -23,6 +33,14 @@ paths:
           $ref: '#/definitions/model.RegisterInput'
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.RegisterResponseSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entity.RegisterResponseFailure'
       summary: Create New User
 swagger: "2.0"
