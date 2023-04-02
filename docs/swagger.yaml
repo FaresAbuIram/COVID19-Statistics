@@ -1,12 +1,24 @@
 definitions:
-  entity.RegisterResponseFailure:
+  entity.LoginResponseSuccess:
     properties:
-      error:
+      token:
         type: string
     type: object
   entity.RegisterResponseSuccess:
     properties:
       message:
+        type: string
+    type: object
+  entity.UserResponseFailure:
+    properties:
+      error:
+        type: string
+    type: object
+  model.LoginInput:
+    properties:
+      email:
+        type: string
+      password:
         type: string
     type: object
   model.RegisterInput:
@@ -19,13 +31,37 @@ definitions:
 info:
   contact: {}
 paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Login User with email and password
+      parameters:
+      - description: email and password
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/model.LoginInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.LoginResponseSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entity.UserResponseFailure'
+      summary: Login
   /register:
     post:
       consumes:
       - application/json
       description: Create New User with email and password
       parameters:
-      - description: user's inforamtion
+      - description: email and password
         in: body
         name: body
         required: true
@@ -41,6 +77,6 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/entity.RegisterResponseFailure'
+            $ref: '#/definitions/entity.UserResponseFailure'
       summary: Create New User
 swagger: "2.0"

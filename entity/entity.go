@@ -4,6 +4,11 @@ type RegisterResponseSuccess struct {
 	Message string `json:"message"`
 }
 
-type RegisterResponseFailure struct {
+type UserResponseFailure struct {
 	Error string `json:"error"`
 }
+
+type LoginResponseSuccess struct {
+	Token string `json:"token"`
+}
+

@@ -6,24 +6,21 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/FaresAbuIram/COVID19-Statistics/graph"
 	"github.com/FaresAbuIram/COVID19-Statistics/graph/model"
-	"github.com/FaresAbuIram/COVID19-Statistics/services"
 	"github.com/gin-gonic/gin"
 )
 
 type UserController struct {
-	UserService *services.UserService
+	Resolver *graph.Resolver
 }
 
-func NewUserController(userService *services.UserService) *UserController {
+func NewUserController(resolver *graph.Resolver) *UserController {
 	return &UserController{
-		UserService: userService,
+		Resolver: resolver,
 	}
 }
 
 func (uc *UserController) Query(context *gin.Context) {
-	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
-		UserService: uc.UserService,
-	}}))
+	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: uc.Resolver}))
 
 	h.ServeHTTP(context.Writer, context.Request)
 }
@@ -33,9 +30,9 @@ func (uc *UserController) Query(context *gin.Context) {
 // @Description  Create New User with email and password
 // @Accept       json
 // @Produce      json
-// @Param        body  body model.RegisterInput true "user's inforamtion"
+// @Param        body body model.RegisterInput true "email and password"
 // @Success      200  {object}  entity.RegisterResponseSuccess
-// @Failure      500  {object}	entity.RegisterResponseFailure
+// @Failure      500  {object}	entity.UserResponseFailure
 // @Router       /register [post]
 func (uc *UserController) Register(context *gin.Context) {
 	var userInput model.RegisterInput
@@ -44,8 +41,7 @@ func (uc *UserController) Register(context *gin.Context) {
 		return
 	}
 
-	resolver := &graph.Resolver{UserService: uc.UserService}
-	_, err := resolver.UserService.CreateNewUser(userInput.Email, userInput.Password)
+	_, err := uc.Resolver.UserService.CreateNewUser(userInput.Email, userInput.Password)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -54,15 +50,23 @@ func (uc *UserController) Register(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"message": "User registered successfully"})
 }
 
+// Login
+// @Summary    Login
+// @Description  Login User with email and password
+// @Accept       json
+// @Produce      json
+// @Param        body body model.LoginInput true "email and password"
+// @Success      200  {object}  entity.LoginResponseSuccess
+// @Failure      500  {object}	entity.UserResponseFailure
+// @Router       /login [post]
 func (uc *UserController) Login(context *gin.Context) {
-	var userInput model.RegisterInput
+	var userInput model.LoginInput
 	if err := context.BindJSON(&userInput); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
 
-	resolver := &graph.Resolver{UserService: uc.UserService}
-	token, err := resolver.UserService.Login(userInput.Email, userInput.Password)
+	token, err := uc.Resolver.UserService.Login(userInput.Email, userInput.Password)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
