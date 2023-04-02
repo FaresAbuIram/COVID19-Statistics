@@ -1,0 +1,28 @@
+definitions:
+  model.RegisterInput:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Create New User with email and password
+      parameters:
+      - description: user's inforamtion
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/model.RegisterInput'
+      produces:
+      - application/json
+      responses: {}
+      summary: Create New User
+swagger: "2.0"

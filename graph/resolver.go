@@ -1,7 +1,9 @@
+//go:generate go run github.com/99designs/gqlgen generate
+
 package graph
 
 import (
-	"database/sql"
+	"github.com/FaresAbuIram/COVID19-Statistics/services"
 )
 
 // This file will not be regenerated automatically.
@@ -9,6 +11,5 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	DB *sql.DB
+	UserService *services.UserService
 }
-

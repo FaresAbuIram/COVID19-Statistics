@@ -7,77 +7,18 @@ package graph
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/FaresAbuIram/COVID19-Statistics/graph/model"
-	"github.com/golang-jwt/jwt"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // Register is the resolver for the register field.
 func (r *mutationResolver) Register(ctx context.Context, input model.RegisterInput) (bool, error) {
-	fmt.Println(input.Email)
-	var count int
-	err := r.DB.QueryRow("SELECT COUNT(*) FROM users WHERE email = $1", input.Email).Scan(&count)
-	if err != nil {
-		fmt.Println(err)
-		return false, err
-	}
-	if count > 0 {
-		return false, fmt.Errorf("user with email %s already exists", input.Email)
-	}
-	fmt.Println(input.Email)
-
-	// Hash the password with bcrypt
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return false, err
-	}
-
-	// Insert the new user into the database
-	_, err = r.DB.Exec("INSERT INTO users (email, password) VALUES ($1, $2)", input.Email, hashedPassword)
-	if err != nil {
-		return false, err
-	}
-
-	return true, nil
+	return r.UserService.CreateNewUser(input.Email, input.Password)
 }
 
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (string, error) {
-	// Find the user with the given email address
-	var id int64
-	var hashedPassword []byte
-	err := r.DB.QueryRow("SELECT id, password FROM users WHERE email = $1", input.Email).Scan(&id, &hashedPassword)
-	if err != nil {
-		return "", fmt.Errorf("user with email %s not found", input.Email)
-	}
-
-	// Check if the provided password matches the stored password
-	if err := bcrypt.CompareHashAndPassword(hashedPassword, []byte(input.Password)); err != nil {
-		return "", fmt.Errorf("invalid password")
-	}
-
-	// Generate a new JWT token for the user
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": id,
-		"exp":     time.Now().Add(time.Hour * 24).Unix(),
-	})
-
-	// Sign the token with the secret key
-	tokenString, err := token.SignedString([]byte("secreatetoken"))
-	if err != nil {
-		fmt.Println(err)
-		return "", err
-	}
-
-	// // Insert the session token into the database
-	// _, err = r.DB.Exec("INSERT INTO sessions (user_id, token) VALUES (?, ?)", id, tokenString)
-	// if err != nil {
-	// 	return "", err
-	// }
-
-	return tokenString, nil
+	return r.UserService.Login(input.Email, input.Password)
 }
 
 // User is the resolver for the user field.
