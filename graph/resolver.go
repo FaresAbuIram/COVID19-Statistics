@@ -12,4 +12,5 @@ import (
 
 type Resolver struct {
 	UserService *services.UserService
+	Covid19Service *services.Covid19Service
 }

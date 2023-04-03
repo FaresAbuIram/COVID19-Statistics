@@ -6,13 +6,15 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/FaresAbuIram/COVID19-Statistics/controllers"
 	"github.com/FaresAbuIram/COVID19-Statistics/database"
+	docs "github.com/FaresAbuIram/COVID19-Statistics/docs"
 	"github.com/FaresAbuIram/COVID19-Statistics/graph"
+	"github.com/FaresAbuIram/COVID19-Statistics/logger"
 	"github.com/FaresAbuIram/COVID19-Statistics/services"
+	"github.com/FaresAbuIram/COVID19-Statistics/middleware"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	docs "github.com/FaresAbuIram/COVID19-Statistics/docs"
 )
 
 func Setup(router *gin.Engine) {
@@ -28,9 +30,12 @@ func Setup(router *gin.Engine) {
 		return
 	}
 
-	userService := services.NewUserService(db)
-	resolver := &graph.Resolver{UserService: userService}
-	userController := controllers.NewUserController(resolver)
+	logger := logger.NewLoggerCollection()
+	userService := services.NewUserService(db, *logger)
+	covid19Service := services.NewCovid19Service(db, *logger)
+	resolver := &graph.Resolver{UserService: userService, Covid19Service: covid19Service}
+	userController := controllers.NewUserController(resolver, *logger)
+	covid19Controller := controllers.NewCovid19Controller(resolver, *logger)
 
 	router.Use(static.Serve("/", static.LocalFile("./website/dist", true)))
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -39,5 +44,6 @@ func Setup(router *gin.Engine) {
 	router.GET("/", gin.WrapH(playground.Handler("GraphQL playground", "/query")))
 	router.POST("/register", userController.Register)
 	router.POST("/login", userController.Login)
+	router.POST("/country", middleware.AuthMiddleware(), covid19Controller.AddNewCountry)
 
 }

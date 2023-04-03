@@ -2,6 +2,21 @@
 
 package model
 
+type Country struct {
+	ID     string `json:"id"`
+	UserID string `json:"userId"`
+	Name   string `json:"name"`
+}
+
+type CountryInput struct {
+	UserID int    `json:"userId"`
+	Name   string `json:"name"`
+}
+
+type CountryResponse struct {
+	Name string `json:"name"`
+}
+
 type LoginInput struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`

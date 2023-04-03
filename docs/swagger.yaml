@@ -1,4 +1,9 @@
 definitions:
+  entity.AddCountryRequest:
+    properties:
+      name:
+        type: string
+    type: object
   entity.LoginResponseSuccess:
     properties:
       token:
@@ -31,6 +36,35 @@ definitions:
 info:
   contact: {}
 paths:
+  /country:
+    post:
+      consumes:
+      - application/json
+      description: Add new country for a the user
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: country name
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/entity.AddCountryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.RegisterResponseSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entity.UserResponseFailure'
+      summary: Add new country
   /login:
     post:
       consumes:

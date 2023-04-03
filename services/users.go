@@ -15,9 +15,10 @@ type UserService struct {
 	LoggerCollection logger.LoggerCollection
 }
 
-func NewUserService(db *sql.DB) *UserService {
+func NewUserService(db *sql.DB, loggerCollection logger.LoggerCollection) *UserService {
 	return &UserService{
 		DB: db,
+		LoggerCollection: loggerCollection,
 	}
 }
 

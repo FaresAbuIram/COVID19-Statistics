@@ -5,8 +5,25 @@ type User {
   password: String!
 }
 
+type Country {
+  id: ID!
+  userId: ID!
+  name: String!
+}
+
+type CountryResponse {
+   name: String!
+}
+
 type Query {
-  user: User
+  list: [Country!]!
+  dailyPercentageeOfDeathToConfirmed(name: String!): Float!
+  getTopThreeCountries(type: String!): [CountryResponse!]!
+}
+
+input CountryInput {
+  userId: Int!
+  name: String!
 }
 
 input RegisterInput {
@@ -21,5 +38,6 @@ input LoginInput {
 type Mutation {
   register(input: RegisterInput!): Boolean!
   login(input: LoginInput!): String!
+  addCountry(input: CountryInput): Boolean!
 }
 

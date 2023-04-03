@@ -12,3 +12,7 @@ type LoginResponseSuccess struct {
 	Token string `json:"token"`
 }
 
+type AddCountryRequest struct {
+	Name string `json:"name"`
+}
+
