@@ -6,19 +6,24 @@ type User {
 }
 
 type Country {
-  id: ID!
-  userId: ID!
   name: String!
 }
 
-type CountryResponse {
-   name: String!
-}
 
 type Query {
-  list: [Country!]!
-  dailyPercentageeOfDeathToConfirmed(name: String!): Float!
-  getTopThreeCountries(type: String!): [CountryResponse!]!
+  list(userId: Int!): [Country!]!
+  percentageeOfDeathToConfirmed(input: PercentageInput!): Float!
+  getTopThreeCountries(input: TopThreeCountriesInput!): [Country!]!
+}
+
+input PercentageInput {
+  userId: Int!
+  name: String!
+}
+
+input TopThreeCountriesInput {
+  userId: Int!
+  type: String!
 }
 
 input CountryInput {

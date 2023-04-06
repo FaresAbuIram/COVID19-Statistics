@@ -3,9 +3,7 @@
 package model
 
 type Country struct {
-	ID     string `json:"id"`
-	UserID string `json:"userId"`
-	Name   string `json:"name"`
+	Name string `json:"name"`
 }
 
 type CountryInput struct {
@@ -13,18 +11,24 @@ type CountryInput struct {
 	Name   string `json:"name"`
 }
 
-type CountryResponse struct {
-	Name string `json:"name"`
-}
-
 type LoginInput struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
+type PercentageInput struct {
+	UserID int    `json:"userId"`
+	Name   string `json:"name"`
+}
+
 type RegisterInput struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type TopThreeCountriesInput struct {
+	UserID int    `json:"userId"`
+	Type   string `json:"type"`
 }
 
 type User struct {

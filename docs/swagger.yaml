@@ -4,9 +4,19 @@ definitions:
       name:
         type: string
     type: object
+  entity.CountryName:
+    properties:
+      name:
+        type: string
+    type: object
   entity.LoginResponseSuccess:
     properties:
       token:
+        type: string
+    type: object
+  entity.Percentage:
+    properties:
+      value:
         type: string
     type: object
   entity.RegisterResponseSuccess:
@@ -36,6 +46,35 @@ definitions:
 info:
   contact: {}
 paths:
+  /all-countries:
+    get:
+      consumes:
+      - application/json
+      description: Get all countries subscribed by the user
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.CountryName'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/entity.UserResponseFailure'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entity.UserResponseFailure'
+      summary: Get all countries
   /country:
     post:
       consumes:
@@ -89,6 +128,39 @@ paths:
           schema:
             $ref: '#/definitions/entity.UserResponseFailure'
       summary: Login
+  /percentage-of-death-to-confirmed/{name}:
+    get:
+      consumes:
+      - application/json
+      description: get the percentage of death cases to confirmed cases for a given
+        country.
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: country name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Percentage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/entity.UserResponseFailure'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entity.UserResponseFailure'
+      summary: get the percentage of death cases to confirmed cases for a given country.
   /register:
     post:
       consumes:
@@ -113,4 +185,41 @@ paths:
           schema:
             $ref: '#/definitions/entity.UserResponseFailure'
       summary: Create New User
+  /top-three-countries/{type}:
+    get:
+      consumes:
+      - application/json
+      description: get the top 3 countries (among the subscribed countries) by the
+        total number of cases based on the case type passed by the user (confirmed,
+        death).
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: (confirmed, death)
+        in: path
+        name: type
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.CountryName'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/entity.UserResponseFailure'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entity.UserResponseFailure'
+      summary: Get Top Three Countries based on the case type passed by the user (confirmed,
+        death)
 swagger: "2.0"

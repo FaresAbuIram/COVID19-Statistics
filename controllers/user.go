@@ -43,7 +43,7 @@ func newQueryRequest(queryBody []byte) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return resp, nil
 }
 
@@ -73,14 +73,14 @@ func (uc *UserController) Register(context *gin.Context) {
 				}) 
 	  		}`
 	query := fmt.Sprintf(mutation, userInput.Email, userInput.Password)
-	
+
 	// Marshal the mutation variables to JSON
-	bodyBody, _ := json.Marshal(map[string]string{
+	queryBody, _ := json.Marshal(map[string]string{
 		"query": query,
 	})
 
 	// Create a new HTTP request to the GraphQL server
-	resp, err := newQueryRequest(bodyBody)
+	resp, err := newQueryRequest(queryBody)
 	if err != nil {
 		uc.Logger.AddErrorLogger(err.Error())
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -93,7 +93,9 @@ func (uc *UserController) Register(context *gin.Context) {
 		Data struct {
 			Register bool `json:"register"`
 		} `json:"data"`
-		
+		Errors []struct {
+			Message string `json:"message"`
+		} `json:"errors"`
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&res)
@@ -102,9 +104,9 @@ func (uc *UserController) Register(context *gin.Context) {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	if res.Data.Register == false {
-		uc.Logger.AddErrorLogger(fmt.Sprintf("user with email %s already exists", userInput.Email))
-		context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("user with email %s already exists", userInput.Email)})
+	if len(res.Errors) != 0 {
+		uc.Logger.AddErrorLogger(res.Errors[0].Message)
+		context.JSON(http.StatusInternalServerError, gin.H{"error": res.Errors[0].Message})
 		return
 	}
 	context.JSON(http.StatusOK, gin.H{"message": "User registered successfully"})
@@ -138,12 +140,12 @@ func (uc *UserController) Login(context *gin.Context) {
 	query := fmt.Sprintf(mutation, userInput.Email, userInput.Password)
 
 	// Marshal the mutation variables to JSON
-	bodyBody, _ := json.Marshal(map[string]string{
+	queryBody, _ := json.Marshal(map[string]string{
 		"query": query,
 	})
 
 	// Create a new HTTP request to the GraphQL server
-	resp, err := newQueryRequest(bodyBody)
+	resp, err := newQueryRequest(queryBody)
 	if err != nil {
 		uc.Logger.AddErrorLogger(err.Error())
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -156,6 +158,9 @@ func (uc *UserController) Login(context *gin.Context) {
 		Data struct {
 			Login string `json:"login"`
 		} `json:"data"`
+		Errors []struct {
+			Message string `json:"message"`
+		} `json:"errors"`
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&res)
@@ -164,13 +169,11 @@ func (uc *UserController) Login(context *gin.Context) {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	if res.Data.Login == "" {
-		uc.Logger.AddErrorLogger("user doesn't exist")
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "user doesn't exist"})
+	if len(res.Errors) != 0 {
+		uc.Logger.AddErrorLogger(res.Errors[0].Message)
+		context.JSON(http.StatusInternalServerError, gin.H{"error": res.Errors[0].Message})
 		return
 	}
-	
 
 	context.JSON(http.StatusOK, gin.H{"token": res.Data.Login})
 }

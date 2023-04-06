@@ -6,7 +6,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/FaresAbuIram/COVID19-Statistics/graph/model"
 )
@@ -23,23 +22,22 @@ func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (s
 
 // AddCountry is the resolver for the addCountry field.
 func (r *mutationResolver) AddCountry(ctx context.Context, input *model.CountryInput) (bool, error) {
-	fmt.Println("afsasf")
 	return r.Covid19Service.AddCountry(input.Name, input.UserID)
 }
 
 // List is the resolver for the list field.
-func (r *queryResolver) List(ctx context.Context) ([]*model.Country, error) {
-	panic(fmt.Errorf("not implemented: List - list"))
+func (r *queryResolver) List(ctx context.Context, userID int) ([]*model.Country, error) {
+	return r.Covid19Service.GetCountries(userID)
 }
 
-// DailyPercentageeOfDeathToConfirmed is the resolver for the dailyPercentageeOfDeathToConfirmed field.
-func (r *queryResolver) DailyPercentageeOfDeathToConfirmed(ctx context.Context, name string) (float64, error) {
-	panic(fmt.Errorf("not implemented: DailyPercentageeOfDeathToConfirmed - dailyPercentageeOfDeathToConfirmed"))
+// PercentageeOfDeathToConfirmed is the resolver for the percentageeOfDeathToConfirmed field.
+func (r *queryResolver) PercentageeOfDeathToConfirmed(ctx context.Context, input model.PercentageInput) (float64, error) {
+	return r.Covid19Service.PercentageOfDeathToConfirmed(input.UserID, input.Name)
 }
 
 // GetTopThreeCountries is the resolver for the getTopThreeCountries field.
-func (r *queryResolver) GetTopThreeCountries(ctx context.Context, typeArg string) ([]*model.CountryResponse, error) {
-	panic(fmt.Errorf("not implemented: GetTopThreeCountries - getTopThreeCountries"))
+func (r *queryResolver) GetTopThreeCountries(ctx context.Context, input model.TopThreeCountriesInput) ([]*model.Country, error) {
+	return r.Covid19Service.GetTopThreeCountries(input.UserID, input.Type)
 }
 
 // Mutation returns MutationResolver implementation.

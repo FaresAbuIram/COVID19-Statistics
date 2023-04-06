@@ -9,8 +9,8 @@ import (
 	docs "github.com/FaresAbuIram/COVID19-Statistics/docs"
 	"github.com/FaresAbuIram/COVID19-Statistics/graph"
 	"github.com/FaresAbuIram/COVID19-Statistics/logger"
-	"github.com/FaresAbuIram/COVID19-Statistics/services"
 	"github.com/FaresAbuIram/COVID19-Statistics/middleware"
+	"github.com/FaresAbuIram/COVID19-Statistics/services"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -37,6 +37,7 @@ func Setup(router *gin.Engine) {
 	userController := controllers.NewUserController(resolver, *logger)
 	covid19Controller := controllers.NewCovid19Controller(resolver, *logger)
 
+	go covid19Service.GetDailyTotals()
 	router.Use(static.Serve("/", static.LocalFile("./website/dist", true)))
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
@@ -45,5 +46,8 @@ func Setup(router *gin.Engine) {
 	router.POST("/register", userController.Register)
 	router.POST("/login", userController.Login)
 	router.POST("/country", middleware.AuthMiddleware(), covid19Controller.AddNewCountry)
+	router.GET("/all-countries", middleware.AuthMiddleware(), covid19Controller.GetCountries)
+	router.GET("/percentage-of-death-to-confirmed/:name", middleware.AuthMiddleware(), covid19Controller.PercentageOfDeathToConfirmed)
+	router.GET("/top-three-countries/:type", middleware.AuthMiddleware(), covid19Controller.GetTopThreeCountries)
 
 }
