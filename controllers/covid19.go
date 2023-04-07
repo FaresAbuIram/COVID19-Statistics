@@ -60,7 +60,7 @@ func (cc *Covid19Controller) AddNewCountry(context *gin.Context) {
 	})
 
 	// Create a new HTTP request to the GraphQL server
-	resp, err := newQueryRequest(queryBody)
+	resp, err := NewQueryRequest(queryBody)
 	if err != nil {
 		cc.Logger.AddErrorLogger(err.Error())
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -129,7 +129,7 @@ func (cc *Covid19Controller) GetCountries(context *gin.Context) {
 	})
 
 	// Create a new HTTP request to the GraphQL server
-	resp, err := newQueryRequest(queryBody)
+	resp, err := NewQueryRequest(queryBody)
 	if err != nil {
 		cc.Logger.AddErrorLogger(err.Error())
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -200,7 +200,7 @@ func (cc *Covid19Controller) PercentageOfDeathToConfirmed(context *gin.Context) 
 	})
 
 	// Create a new HTTP request to the GraphQL server
-	resp, err := newQueryRequest(queryBody)
+	resp, err := NewQueryRequest(queryBody)
 	if err != nil {
 		cc.Logger.AddErrorLogger(err.Error())
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -271,7 +271,7 @@ func (cc *Covid19Controller) GetTopThreeCountries(context *gin.Context) {
 	})
 
 	// Create a new HTTP request to the GraphQL server
-	resp, err := newQueryRequest(queryBody)
+	resp, err := NewQueryRequest(queryBody)
 	if err != nil {
 		cc.Logger.AddErrorLogger(err.Error())
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

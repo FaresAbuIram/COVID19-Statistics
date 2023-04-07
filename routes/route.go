@@ -29,10 +29,10 @@ func Setup(router *gin.Engine) {
 		log.Fatalf("failed to connect to database: %v", err)
 		return
 	}
-
+	sqlRepository := database.NewSQLRepository(db)
 	logger := logger.NewLoggerCollection()
-	userService := services.NewUserService(db, *logger)
-	covid19Service := services.NewCovid19Service(db, *logger)
+	userService := services.NewUserService(sqlRepository, *logger)
+	covid19Service := services.NewCovid19Service(sqlRepository, *logger)
 	resolver := &graph.Resolver{UserService: userService, Covid19Service: covid19Service}
 	userController := controllers.NewUserController(resolver, *logger)
 	covid19Controller := controllers.NewCovid19Controller(resolver, *logger)

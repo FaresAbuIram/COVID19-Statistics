@@ -3,6 +3,7 @@ package middleware
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -22,7 +23,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		// Parse and validate the token
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			// Return the secret key used to sign the token
-			return []byte("secreatetoken"), nil
+			return []byte(os.Getenv("TOKEN_SECRET")), nil
 		})
 		if err != nil {
 			context.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization token"})
@@ -40,20 +41,9 @@ func AuthMiddleware() gin.HandlerFunc {
 				return
 			}
 
-			// // Store the token in a cookie
-			// cookie := &http.Cookie{
-			// 	Name:     "access_token",
-			// 	Value:    tokenString,
-			// 	Path:     "/",
-			// 	HttpOnly: true,
-			// 	MaxAge:   3600, // Set the cookie to expire in 1 hour
-			// 	Secure:   true, // Set the cookie to be secure (HTTPS only)
-			// }
-			// http.SetCookie(context.Writer, cookie)
-
 			// Set the user ID in the request context
 			context.Set("user_id", userID)
-			
+
 			// Call the next middleware/handler in the chain
 			context.Next()
 		} else {

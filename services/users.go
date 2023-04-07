@@ -1,46 +1,69 @@
 package services
 
 import (
-	"database/sql"
 	"fmt"
+	"os"
 	"time"
 
+	"github.com/FaresAbuIram/COVID19-Statistics/entity"
+	"github.com/FaresAbuIram/COVID19-Statistics/graph/model"
 	"github.com/FaresAbuIram/COVID19-Statistics/logger"
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
 
+type SQLRepository interface {
+	UsersCountById(userId int) (int, error)
+	CountriesCountByname(name string) (int, error)
+	InsertCountry(name string) (int, error)
+	InsertStatistic(countryId int) error
+	GetCountryIdByName(name string) (int, error)
+	InsertIntoUsersCountries(userId, countryId int) error
+	GetAllCountriesByUserId(userId int) ([]*model.Country, error)
+	GetPercentageOfDeathToConfirmedByCountryName(userId int, countryName string) (float64, error)
+	GetTopThreeCountriesByUserIdAndType(userId int, status string) ([]*model.Country, error)
+	GetAllCountries() (map[int]string, error)
+	GetAllStatistics() ([]entity.Statistics, error)
+	UpdateArrayOfStatistics(statistics []entity.Statistics)
+	UsersCountByEmail(email string) (int, error)
+	InsertNewUser(email string, password []byte) error
+	FindUserByEmail(email string) (int, []byte, error)
+}
 type UserService struct {
-	DB               *sql.DB
+	SQLRepository    SQLRepository
 	LoggerCollection logger.LoggerCollection
 }
 
-func NewUserService(db *sql.DB, loggerCollection logger.LoggerCollection) *UserService {
+func NewUserService(sqlRepository SQLRepository, loggerCollection logger.LoggerCollection) *UserService {
 	return &UserService{
-		DB: db,
+		SQLRepository:    sqlRepository,
 		LoggerCollection: loggerCollection,
 	}
 }
 
 func (u *UserService) CreateNewUser(email, password string) (bool, error) {
-	var count int
-	err := u.DB.QueryRow("SELECT COUNT(*) FROM users WHERE email = $1", email).Scan(&count)
+	count, err := u.SQLRepository.UsersCountByEmail(email)
 	if err != nil {
+		u.LoggerCollection.AddErrorLogger(err.Error())
 		return false, err
 	}
+
 	if count > 0 {
+		u.LoggerCollection.AddErrorLogger(fmt.Errorf("user with email %s already exists", email).Error())
 		return false, fmt.Errorf("user with email %s already exists", email)
 	}
 
 	// Hash the password with bcrypt
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
+		u.LoggerCollection.AddErrorLogger(err.Error())
 		return false, err
 	}
 
 	// Insert the new user into the database
-	_, err = u.DB.Exec("INSERT INTO users (email, password) VALUES ($1, $2)", email, hashedPassword)
+	err = u.SQLRepository.InsertNewUser(email, hashedPassword)
 	if err != nil {
+		u.LoggerCollection.AddErrorLogger(err.Error())
 		return false, err
 	}
 
@@ -48,16 +71,15 @@ func (u *UserService) CreateNewUser(email, password string) (bool, error) {
 }
 
 func (u *UserService) Login(email, password string) (string, error) {
-	// Find the user with the given email address
-	var id int64
-	var hashedPassword []byte
-	err := u.DB.QueryRow("SELECT id, password FROM users WHERE email = $1", email).Scan(&id, &hashedPassword)
+	id, hashedPassword, err := u.SQLRepository.FindUserByEmail(email)
 	if err != nil {
+		u.LoggerCollection.AddErrorLogger(err.Error())
 		return "", fmt.Errorf("user with email %s not found", email)
 	}
 
 	// Check if the provided password matches the stored password
 	if err := bcrypt.CompareHashAndPassword(hashedPassword, []byte(password)); err != nil {
+		u.LoggerCollection.AddErrorLogger(err.Error())
 		return "", fmt.Errorf("invalid password")
 	}
 
@@ -68,17 +90,10 @@ func (u *UserService) Login(email, password string) (string, error) {
 	})
 
 	// Sign the token with the secret key
-	tokenString, err := token.SignedString([]byte("secreatetoken"))
+	tokenString, err := token.SignedString([]byte(os.Getenv("TOKEN_SECRET")))
 	if err != nil {
-		fmt.Println(err)
 		return "", err
 	}
-
-	// // Insert the session token into the database
-	// _, err = r.DB.Exec("INSERT INTO sessions (user_id, token) VALUES (?, ?)", id, tokenString)
-	// if err != nil {
-	// 	return "", err
-	// }
 
 	return tokenString, nil
 }

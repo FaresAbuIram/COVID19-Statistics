@@ -18,6 +18,10 @@ type UserController struct {
 	Logger   logger.LoggerCollection
 }
 
+type QueryRequest interface {
+	NewQueryRequest(queryBody []byte) (*http.Response, error)
+}
+
 func NewUserController(resolver *graph.Resolver, logger logger.LoggerCollection) *UserController {
 	return &UserController{
 		Resolver: resolver,
@@ -31,7 +35,7 @@ func (uc *UserController) Query(context *gin.Context) {
 	h.ServeHTTP(context.Writer, context.Request)
 }
 
-func newQueryRequest(queryBody []byte) (*http.Response, error) {
+func NewQueryRequest(queryBody []byte) (*http.Response, error) {
 	request, err := http.NewRequest("POST", "http://localhost:8080/query", bytes.NewBuffer(queryBody))
 	if err != nil {
 		return nil, err
@@ -80,7 +84,7 @@ func (uc *UserController) Register(context *gin.Context) {
 	})
 
 	// Create a new HTTP request to the GraphQL server
-	resp, err := newQueryRequest(queryBody)
+	resp, err := NewQueryRequest(queryBody)
 	if err != nil {
 		uc.Logger.AddErrorLogger(err.Error())
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -145,7 +149,7 @@ func (uc *UserController) Login(context *gin.Context) {
 	})
 
 	// Create a new HTTP request to the GraphQL server
-	resp, err := newQueryRequest(queryBody)
+	resp, err := NewQueryRequest(queryBody)
 	if err != nil {
 		uc.Logger.AddErrorLogger(err.Error())
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

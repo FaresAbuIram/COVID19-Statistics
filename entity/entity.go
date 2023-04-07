@@ -42,5 +42,5 @@ type Statistics struct {
 type CovidData struct {
 	Confirmed int `json:"Confirmed"`
 	Deaths    int `json:"Deaths"`
-	Decovered int `json:"Recovered"`
+	Recovered int `json:"Recovered"`
 }
